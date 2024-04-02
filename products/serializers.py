@@ -1,4 +1,13 @@
-from .models import Catalog, FoodCategory, Brand, Product, ProductImage, CarouselItem, Review, Favorite, Cart
+from .models import (Catalog,
+                    FoodCategory,
+                    Brand,
+                    Product,
+                    ProductImage,
+                    CarouselItem,
+                    Review,
+                    Favorite,
+                    Cart,
+                    )
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
@@ -54,7 +63,22 @@ class ProductSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
-        representation['catalog_name'] = Catalog.objects.get(id=representation['catalog']).name
+        # representation['catalog_name'] = Catalog.objects.get(id=representation['catalog']).name
+        representation['food_category_name'] = FoodCategory.objects.get(id=representation['food_category']).name
+        representation['brand_name'] = Brand.objects.get(id=representation['brand']).name
+
+        return representation
+    
+
+class ProductGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        # representation['catalog_name'] = Catalog.objects.get(id=representation['catalog']).name
         representation['food_category_name'] = FoodCategory.objects.get(id=representation['food_category']).name
         representation['brand_name'] = Brand.objects.get(id=representation['brand']).name
         representation['in_favorite'] = True if Favorite.objects.filter(product=instance).exists else False
@@ -76,6 +100,19 @@ class CarouselItemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class CartListSerializer(serializers.ModelSerializer):
+    product = ProductSerializer
+    
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
+    
+    class Meta:
+        model = Cart
+        fields = '__all__'
+        read_only_fields = ('id', 'user')
+
+
 class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
@@ -85,6 +122,3 @@ class CartSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
-
-    
-
