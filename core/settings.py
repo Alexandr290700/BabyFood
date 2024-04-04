@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'drf_yasg',
     'djoser',
+    'haystack',
 
     'users',
     'products',
@@ -235,3 +236,16 @@ ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+        'URL': 'http://localhost:9200/',
+        'INDEX_NAME': 'products',
+        'INCLUDE_SPELLING': True,
+        'EXCLUDED_INDEXES': ['core.products.search_indexes.ProductIndex'],
+        'HAYSTACK_DOCUMENT_FIELD': 'content',
+    },
+}
+
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'

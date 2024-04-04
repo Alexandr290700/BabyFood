@@ -7,6 +7,8 @@ from .models import (Catalog,
                     Review,
                     Favorite,
                     Cart,
+                    Order,
+                    OrderItem,
                     )
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -56,14 +58,21 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    food_category_name = serializers.SerializerMethodField()
+    brand_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Product
         fields = '__all__'
 
+    def get_food_category_name(self, obj):
+        return obj.food_category.name if obj.food_category else None
+    
+    def get_brand_name(self, obj):
+        return obj.brand.name if obj.brand else None
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-
-        # representation['catalog_name'] = Catalog.objects.get(id=representation['catalog']).name
         representation['food_category_name'] = FoodCategory.objects.get(id=representation['food_category']).name
         representation['brand_name'] = Brand.objects.get(id=representation['brand']).name
 
@@ -77,8 +86,6 @@ class ProductGetSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-
-        # representation['catalog_name'] = Catalog.objects.get(id=representation['catalog']).name
         representation['food_category_name'] = FoodCategory.objects.get(id=representation['food_category']).name
         representation['brand_name'] = Brand.objects.get(id=representation['brand']).name
         representation['in_favorite'] = True if Favorite.objects.filter(product=instance).exists else False
@@ -122,3 +129,26 @@ class CartSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
+    
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ['product', 'quantity']
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True)
+
+    class Meta:
+        model = Order
+        fields = ('id', 'user', 'name', 'phone', 'email', 'shipping_address', 'items')
+        read_only_fields = ('id', 'user', )
+
+    def create(self, validated_data):
+        items_data = validated_data.pop('items')
+        validated_data['user'] = self.context['request'].user
+        order = Order.objects.create(**validated_data)
+        for item_data in items_data:
+            OrderItem.objects.create(order=order, **item_data)
+        return order

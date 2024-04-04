@@ -8,6 +8,8 @@ from .models import (Catalog,
                      Review,
                      Favorite,
                      Cart,
+                     Order,
+
                      )
 from rest_framework import viewsets, status, generics
 from rest_framework.permissions import IsAuthenticated
@@ -25,8 +27,12 @@ from .serializers import (CatalogSerializer,
                           ReviewSerializer,
                           FavoriteSerializer,
                           CartSerializer,
-                          CartListSerializer
+                          CartListSerializer,
+                          OrderSerializer,
                           )
+
+from haystack.query import SearchQuerySet
+from rest_framework.views import APIView
 
 
 class CatalogViewSet(viewsets.ModelViewSet):
@@ -142,6 +148,24 @@ class ProductViewSet(viewsets.ModelViewSet):
         return Response({"In Favorite": favor})
     
 
+class ProductSearchAPIView(APIView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('q',openapi.IN_QUERY, description='Строка поискового запроса', type=openapi.TYPE_STRING)
+        ]
+    )
+    def get(self, request):
+        query = request.query_params.get('q', '').strip()
+        if not query:
+            return Response({'detail': 'Параметр не предоставлен'}, status=status.HTTP_400_BAD_REQUEST)
+        search_results = SearchQuerySet().models(Product).autocomplete(name=query)
+        products = [result.object for result in search_results]
+        serializer = ProductSerializer(products, many=True)
+        return Response(serializer.data)
+        
+    
+    
+
 class ProductImageViewSet(viewsets.ModelViewSet):
     queryset = ProductImage.objects.all()
     serializer_class = ProductImageSerializer
@@ -220,3 +244,42 @@ class CartViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
         Cart.objects.filter(user=user).delete()
         return Response({'message': 'Success'})
+    
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if self.action == 'list':
+            if user.is_anonymous:
+                return Order.objects.none()
+            return Order.objects.filter(user=user)
+        else:
+            return super().get_queryset()
+        
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        order = serializer.instance
+        order_items = order.items.all()
+        items_details = []
+
+        for item in order_items:
+            product_detail = f'{item.product.name} - Количество: {item.quantity}'
+            items_details.append(product_detail)
+
+            Cart.objects.filter(user=request.user, product=item.product).delete()
+
+        items_text = '\n'.join(items_details)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
