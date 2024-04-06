@@ -24,6 +24,7 @@ django-colorfield==0.11.0
 django-cors-headers==4.3.1
 django-environ==0.11.2
 django-filter==23.5
+django-haystack==3.2.1
 django-json-widget==1.1.1
 django-jsonfield-backport==1.0.5
 django-phonenumber-field==7.3.0
@@ -36,6 +37,7 @@ djoser==2.2.2
 drf-spectacular==0.27.1
 drf-spectacular-sidecar==2024.2.1
 drf-yasg==1.21.7
+elasticsearch==7.17.9
 frozenlist==1.4.1
 future==1.0.0
 gunicorn==21.2.0
@@ -77,7 +79,7 @@ standardjson==0.3.1
 typing_extensions==4.10.0
 tzdata==2024.1
 uritemplate==4.1.1
-urllib3==2.2.1
+urllib3==1.26.18
 vine==5.1.0
 wcwidth==0.2.13
 yarl==1.9.4

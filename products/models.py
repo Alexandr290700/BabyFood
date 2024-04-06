@@ -32,7 +32,7 @@ class Product(models.Model):
     name = models.CharField(max_length=300)
     description = models.TextField()
     price = models.DecimalField(max_digits=15, decimal_places=2)
-    default_image = models.ImageField(upload_to='media/defaults/')
+    default_image = models.ImageField(upload_to='media/defaults/', null=True, blank=True)
     weight = models.IntegerField()
     is_arrived = models.BooleanField(default=True)
     rating = models.IntegerField(default=1, choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')])

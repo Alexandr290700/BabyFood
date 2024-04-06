@@ -1,3 +1,5 @@
+import asyncio
+from .utils import send_new_review
 from django.shortcuts import render
 from .models import (Catalog,
                      FoodCategory,
@@ -156,10 +158,14 @@ class ProductSearchAPIView(APIView):
     )
     def get(self, request):
         query = request.query_params.get('q', '').strip()
+
         if not query:
             return Response({'detail': 'Параметр не предоставлен'}, status=status.HTTP_400_BAD_REQUEST)
-        search_results = SearchQuerySet().models(Product).autocomplete(name=query)
-        products = [result.object for result in search_results]
+        
+        sqs = SearchQuerySet().models(Product).autocomplete(name=query)
+        sqs = sqs.filter_or(brand_name=query, food_category_name=query)
+
+        products = [result.object for result in sqs]
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
         
@@ -187,18 +193,34 @@ class ReviewViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        # headers = self.get_success_headers(serializer.data)
+
+        review = serializer.instance
 
         product_id = request.data.get('product')
         if product_id:
             product = Product.objects.get(id=product_id)
             self.update_product_rating(product)
 
+        date = review.created_at.strftime('%Y-%m-%d')
+        time = review.created_at.strftime('%H:%M:%S')
+        message = f"Новый отзыв на продукт: {review.product.name}\n\n" \
+                  f"Пользователь: {review.user.name}\n" \
+                  f"Рейтинг: {review.rating}\n" \
+                  f"Дата: {date} в {time}\n\n" \
+                  f"Отзыв: {review.text}"
+        
+        asyncio.run(send_new_review(message))
+
         return response
     
     def update_product_rating(self, product):
         reviews_count = product.reviews.count()
         new_rating = 0
-        for review in product.review.all():
+        for review in product.reviews.all():
             new_rating += review.rating
 
         product.rating = new_rating // reviews_count
