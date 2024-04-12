@@ -209,6 +209,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         time = review.created_at.strftime('%H:%M:%S')
         message = f"Новый отзыв на продукт: {review.product.name}\n\n" \
                   f"Пользователь: {review.user.name}\n" \
+                  f"Email: {review.user.email}\n" \
                   f"Рейтинг: {review.rating}\n" \
                   f"Дата: {date} в {time}\n\n" \
                   f"Отзыв: {review.text}"

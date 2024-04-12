@@ -11,7 +11,7 @@ RUN pip install -r requirements.txt -vvv
 
 COPY . .
 
-# RUN python manage.py makemigrations
+RUN python manage.py makemigrations
 RUN python manage.py collectstatic --noinput
 
 CMD [ "python", "manage.py migrate" ]
