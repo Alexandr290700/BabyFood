@@ -119,3 +119,11 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f'Order Item: {self.product.name} - {self.quantity}'
+    
+
+class Promotion(models.Model):
+    image = models.ImageField(upload_to='media/promotion_image/')
+    link = models.URLField(blank=True)
+
+    def __str__(self):
+        return f'Promotion {self.pk}'

@@ -11,7 +11,7 @@ from .models import (Catalog,
                      Favorite,
                      Cart,
                      Order,
-
+                     Promotion,
                      )
 from rest_framework import viewsets, status, generics
 from rest_framework.permissions import IsAuthenticated
@@ -31,6 +31,7 @@ from .serializers import (CatalogSerializer,
                           CartSerializer,
                           CartListSerializer,
                           OrderSerializer,
+                          PromotionSerializer,
                           )
 
 from haystack.query import SearchQuerySet
@@ -306,3 +307,8 @@ class OrderViewSet(viewsets.ModelViewSet):
         items_text = '\n'.join(items_details)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+
+class PromotionViewSet(viewsets.ModelViewSet):
+    queryset = Promotion.objects.all()
+    serializer_class = PromotionSerializer

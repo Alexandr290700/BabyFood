@@ -12,6 +12,7 @@ from .views import (
     CartViewSet,
     OrderViewSet,
     ProductSearchAPIView,
+    PromotionViewSet,
 )
 
 
@@ -26,10 +27,10 @@ router.register('carousel_items', CarouselItemViewSet)
 router.register('reviews', ReviewViewSet)
 router.register('carts', CartViewSet)
 router.register('orders', OrderViewSet)
+router.register('promotion', PromotionViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
     path('users/favorites/', FavoriteListAPIView.as_view()),
     path('search/', ProductSearchAPIView.as_view(), name='product-search'),
-    # path('search/<str:query>/', ProductSearchAPIView.as_view(), name='product-search-query'),
 ]

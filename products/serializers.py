@@ -9,6 +9,7 @@ from .models import (Catalog,
                     Cart,
                     Order,
                     OrderItem,
+                    Promotion,
                     )
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -152,3 +153,9 @@ class OrderSerializer(serializers.ModelSerializer):
         for item_data in items_data:
             OrderItem.objects.create(order=order, **item_data)
         return order
+    
+
+class PromotionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Promotion
+        fields = '__all__'
