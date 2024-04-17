@@ -15,6 +15,7 @@ class Catalog(models.Model):
 
 class FoodCategory(models.Model):
     name = models.CharField(max_length=150)
+    image = models.ImageField(upload_to='media/food_category/', null=True, blank=True)
     catalog = models.ForeignKey(Catalog, on_delete=models.CASCADE, related_name='food_categories')
 
     def __str__(self):
