@@ -12,6 +12,9 @@ from .models import (Catalog,
                      Cart,
                      Order,
                      Promotion,
+                     BrandImage,
+                     ExtraInfo,
+                     ProductBrandImage,
                      )
 from rest_framework import viewsets, status, generics
 from rest_framework.permissions import IsAuthenticated
@@ -32,6 +35,9 @@ from .serializers import (CatalogSerializer,
                           CartListSerializer,
                           OrderSerializer,
                           PromotionSerializer,
+                          BrandImageSerializer,
+                          ExtraInfoSerializer,
+                          ProductBrandImageSerializer,
                           )
 
 from haystack.query import SearchQuerySet
@@ -57,6 +63,21 @@ class FoodCategoryViewSet(viewsets.ModelViewSet):
 class BrandViewSet(viewsets.ModelViewSet):
     queryset = Brand.objects.all()
     serializer_class = BrandSerializer
+
+
+class BrandImageViewSet(viewsets.ModelViewSet):
+    queryset = BrandImage.objects.all()
+    serializer_class = BrandImageSerializer
+
+
+class ExtraInfoViewSet(viewsets.ModelViewSet):
+    queryset = ExtraInfo.objects.all()
+    serializer_class = ExtraInfoSerializer
+
+
+class ProductBrandImageViewSet(viewsets.ModelViewSet):
+    queryset = ProductBrandImage.objects.all()
+    serializer_class = ProductBrandImageSerializer
 
 
 class ProductViewSet(viewsets.ModelViewSet):

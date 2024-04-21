@@ -24,20 +24,43 @@ class FoodCategory(models.Model):
 
 class Brand(models.Model):
     name = models.CharField(max_length=100)
+    images = models.ImageField(upload_to='media/brand/')
 
     def __str__(self):
         return self.name
     
 
+class BrandImage(models.Model):
+    brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='brand_images')
+    images = models.ImageField(upload_to='media/brand/')
+
+    def __str__(self):
+        return self.brand.name
+    
+
+class ExtraInfo(models.Model):
+    info = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.info
+    
+
+class ProductBrandImage(models.Model):
+    images = models.ImageField(upload_to='media/product_brand/')
+
+    def __str__(self):
+        return f'Brand image {self.id}'
+
+
 class Product(models.Model):
     name = models.CharField(max_length=300)
     description = models.TextField()
+    extra_info = models.ManyToManyField(ExtraInfo, blank=True)
     price = models.DecimalField(max_digits=15, decimal_places=2)
     default_image = models.ImageField(upload_to='media/defaults/', null=True, blank=True)
+    brand_image = models.ForeignKey(ProductBrandImage, on_delete=models.CASCADE, related_name='brand_image')
     weight = models.IntegerField()
-    is_arrived = models.BooleanField(default=True)
     rating = models.IntegerField(default=1, choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')])
-    in_stock = models.BooleanField(default=True)
     discount = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     food_category = models.ForeignKey(FoodCategory, on_delete=models.CASCADE, related_name='products')
@@ -47,8 +70,7 @@ class Product(models.Model):
         return f"{self.name} - {self.brand.name}"
     
     def get_absolute_url(self):
-        return reverse("product_detail", kwargs={"pk": self.pk})
-    
+        return reverse("product_detail", kwargs={"pk": self.pk})   
     
 
 class ProductImage(models.Model):

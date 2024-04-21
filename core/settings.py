@@ -212,7 +212,6 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:4200',
     'https://baby-back.ru',
     'https://www.baby-back.ru',
-
 ]
 
 SITE_ID = 1
