@@ -10,6 +10,9 @@ from .models import (Catalog,
                     Order,
                     OrderItem,
                     Promotion,
+                    BrandImage,
+                    ExtraInfo,
+                    ProductBrandImage,
                     )
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -36,6 +39,12 @@ class BrandSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class BrandImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BrandImage
+        fields = '__all__'
+
+
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
@@ -56,6 +65,18 @@ class ReviewSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['user_name'] = User.objects.get(id=representation['user']).name
         return representation
+
+
+class ExtraInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExtraInfo
+        fields = '__all__'
+
+
+class ProductBrandImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductBrandImage
+        fields = '__all__'
 
 
 class ProductSerializer(serializers.ModelSerializer):

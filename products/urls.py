@@ -13,6 +13,8 @@ from .views import (
     OrderViewSet,
     ProductSearchAPIView,
     PromotionViewSet,
+    BrandImageViewSet,
+    ExtraInfoViewSet,
 )
 
 
@@ -25,9 +27,11 @@ router.register('products', ProductViewSet)
 router.register('product_images', ProductImageViewSet)
 router.register('carousel_items', CarouselItemViewSet)
 router.register('reviews', ReviewViewSet)
-router.register('carts', CartViewSet)
-router.register('orders', OrderViewSet)
+router.register(r'carts', CartViewSet)
+router.register(r'orders', OrderViewSet)
 router.register('promotion', PromotionViewSet)
+router.register('brand_image', BrandImageViewSet)
+router.register('extra_info', ExtraInfoViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
