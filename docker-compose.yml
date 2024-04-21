@@ -13,7 +13,7 @@ services:
   api:
     build: 
       context: .
-      dockerfile: Dockerfile.api
+      dockerfile: Dockerfile
     env_file:
       - .env
     volumes:
@@ -21,7 +21,7 @@ services:
       - media_volume:/app/media
     expose:
       - "8000"
-    command: gunicorn --bind 0.0.0.0:8002 core.wsgi:application
+    command: gunicorn --bind 0.0.0.0:8000 core.wsgi:application
 
   nginx:
     build: 
@@ -31,15 +31,13 @@ services:
       - .env
     depends_on:
       - api
-      - daphne
     ports:
-      - "80:80"
+      - "8080:8080"
       - "443:443"
     volumes:
       - static_volume:/app/static
       - media_volume:/app/media
       - /etc/letsencrypt/:/etc/letsencrypt/
-
 volumes:
   db:
   static_volume:
