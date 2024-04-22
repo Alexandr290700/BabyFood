@@ -21,7 +21,7 @@ services:
       - media_volume:/app/media
     expose:
       - "8000"
-    command: gunicorn --bind 0.0.0.0:8000 core.wsgi:application
+    command: gunicorn --bind 0.0.0.0:8002 core.wsgi:application
 
   nginx:
     build: 
