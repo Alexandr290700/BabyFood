@@ -38,7 +38,6 @@ services:
       - static_volume:/app/static
       - media_volume:/app/media
       - /etc/letsencrypt/:/etc/letsencrypt/
-
 volumes:
   db:
   static_volume:
