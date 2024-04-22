@@ -11,7 +11,7 @@ services:
       - db:/var/lib/postgresql/data
 
   api:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     env_file:
@@ -21,10 +21,10 @@ services:
       - media_volume:/app/media
     expose:
       - "8000"
-    command: gunicorn --bind 0.0.0.0:8000 core.wsgi:application
+    command: gunicorn --bind 0.0.0.0:8002 core.wsgi:application
 
   nginx:
-    build: 
+    build:
       context: ./nginx
       dockerfile: Dockerfile
     env_file:
