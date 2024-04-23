@@ -11,7 +11,7 @@ services:
       - db:/var/lib/postgresql/data
 
   api:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     env_file:
@@ -24,7 +24,7 @@ services:
     command: gunicorn --bind 0.0.0.0:8002 core.wsgi:application
 
   nginx:
-    build: 
+    build:
       context: ./nginx
       dockerfile: Dockerfile
     env_file:

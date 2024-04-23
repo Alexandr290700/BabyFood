@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'djoser',
     'haystack',
     'ckeditor',
+    'multiupload',
 
     'users',
     'products',
