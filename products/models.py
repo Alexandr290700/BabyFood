@@ -37,7 +37,6 @@ class Product(models.Model):
     arrived = models.BooleanField(default=True)
     price = models.DecimalField(max_digits=15, decimal_places=2)
     default_image = models.ImageField(upload_to='media/defaults/', null=True, blank=True)
-    brand_image = models.ImageField(upload_to='media/brand/')
     weight = models.IntegerField()
     rating = models.IntegerField(default=1, choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')])
     discount = models.IntegerField(default=0)
@@ -51,7 +50,7 @@ class Product(models.Model):
         return f"{self.name} - {self.brand.name}"
     
     def get_absolute_url(self):
-        return reverse("product_detail", kwargs={"pk": self.pk})   
+        return reverse("product_detail", kwargs={"pk": self.pk})
     
 
 class ProductImage(models.Model):

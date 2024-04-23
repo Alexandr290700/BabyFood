@@ -34,7 +34,7 @@ schema_view = get_schema_view(
     ),
     public=True,
     permission_classes=[permissions.IsAdminUser],
-    url=config('BASE_URL')
+    # url=config('BASE_URL')
 )
 
 urlpatterns = [
