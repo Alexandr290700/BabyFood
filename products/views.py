@@ -1,8 +1,8 @@
 import asyncio
 from .utils import send_new_review
 from django.shortcuts import render
-from .models import (Catalog,
-                     FoodCategory,
+from .models import (
+                     Category,
                      Brand,
                      Product,
                      ProductImage,
@@ -12,9 +12,8 @@ from .models import (Catalog,
                      Cart,
                      Order,
                      Promotion,
-                     BrandImage,
-                     ExtraInfo,
-                     ProductBrandImage,
+                     SubCategory,
+                     CustomerReview
                      )
 from rest_framework import viewsets, status, generics
 from rest_framework.permissions import IsAuthenticated
@@ -22,8 +21,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from .serializers import (CatalogSerializer,
-                          FoodCategorySerializer,
+from .serializers import (
+                          CategorySerializer,
                           BrandSerializer,
                           ProductSerializer,
                           ProductGetSerializer,
@@ -35,49 +34,43 @@ from .serializers import (CatalogSerializer,
                           CartListSerializer,
                           OrderSerializer,
                           PromotionSerializer,
-                          BrandImageSerializer,
-                          ExtraInfoSerializer,
-                          ProductBrandImageSerializer,
+                          SubCategorySerializer,
+                          CustomerReviewSerializer
                           )
 
 from haystack.query import SearchQuerySet
 from rest_framework.views import APIView
 
-
-class CatalogViewSet(viewsets.ModelViewSet):
-    queryset = Catalog.objects.all()
-    serializer_class = CatalogSerializer
+import logging
+logger = logging.getLogger(__name__)
 
 
-class FoodCategoryViewSet(viewsets.ModelViewSet):
-    queryset = FoodCategory.objects.all()
-    serializer_class = FoodCategorySerializer
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
     @action(methods=['get'], detail=True)
     def get_by_category(self, request, pk=None):
-        food_categories = FoodCategory.objects.filter(catalog=pk)
-        serializer = FoodCategorySerializer(food_categories, many=True)
+        categories = Category.objects.filter(catalog=pk)
+        serializer = CategorySerializer(categories, many=True)
         return Response({'products': serializer.data})
+    
+
+class SubCategoryViewSet(viewsets.ModelViewSet):
+    queryset = SubCategory.objects.all()
+    serializer_class = SubCategorySerializer
+
+    @action(methods=['get'], detail=True)
+    def get_by_categories(self, request, pk=None):
+        subcategories = self.queryset.filter(category_id=pk)
+        serializer = self.get_serializer(subcategories, many=True)
+        return Response(serializer.data)
     
 
 class BrandViewSet(viewsets.ModelViewSet):
     queryset = Brand.objects.all()
     serializer_class = BrandSerializer
 
-
-class BrandImageViewSet(viewsets.ModelViewSet):
-    queryset = BrandImage.objects.all()
-    serializer_class = BrandImageSerializer
-
-
-class ExtraInfoViewSet(viewsets.ModelViewSet):
-    queryset = ExtraInfo.objects.all()
-    serializer_class = ExtraInfoSerializer
-
-
-class ProductBrandImageViewSet(viewsets.ModelViewSet):
-    queryset = ProductBrandImage.objects.all()
-    serializer_class = ProductBrandImageSerializer
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -89,7 +82,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         min_price = self.request.query_params.get('min_price', None)
         max_price = self.request.query_params.get('max_price', None)
         brand = self.request.query_params.getlist('brand', [])
-        food_category = self.request.query_params.getlist('food_category', [])
+        category = self.request.query_params.getlist('category', [])
         product_name = self.request.query_params.get('product_name', None)
 
         if min_price is not None:
@@ -98,8 +91,8 @@ class ProductViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(price__lte=max_price)
         if brand:
             queryset = queryset.filter(brand__id__in=brand)
-        if food_category:
-            queryset = queryset.filter(food_category__id__in=food_category)
+        if category:
+            queryset = queryset.filter(category__id__in=category)
         if product_name:
             queryset = queryset.filter(name=product_name)
 
@@ -117,12 +110,12 @@ class ProductViewSet(viewsets.ModelViewSet):
         openapi.Parameter('min_price', openapi.IN_QUERY, description='Минимальная цена', type=openapi.TYPE_NUMBER),
         openapi.Parameter('max_price', openapi.IN_QUERY, description='Максимальная цена', type=openapi.TYPE_NUMBER),
         openapi.Parameter('brand', openapi.IN_QUERY, description='Бренды (ID)', type=openapi.TYPE_NUMBER),
-        openapi.Parameter('food_category', openapi.IN_QUERY, description='Категории питания (ID)', type=openapi.TYPE_NUMBER),
+        openapi.Parameter('category', openapi.IN_QUERY, description='Категории (ID)', type=openapi.TYPE_NUMBER),
         openapi.Parameter('product_name', openapi.IN_QUERY, description='Название товара', type=openapi.TYPE_STRING)
     ])
     @action(methods=['get'], detail=True)
-    def get_by_food_category(self, request, pk=None):
-        products = Product.objects.filter(food_category=pk)
+    def get_by_category(self, request, pk=None):
+        products = Product.objects.filter(category=pk)
         serializer = ProductSerializer(products, many=True)
 
         return Response({'products': serializer.data})
@@ -132,7 +125,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         openapi.Parameter('min_price', openapi.IN_QUERY, description='Минимальная цена', type=openapi.TYPE_NUMBER),
         openapi.Parameter('max_price', openapi.IN_QUERY, description='Максимальная цена', type=openapi.TYPE_NUMBER),
         openapi.Parameter('brand', openapi.IN_QUERY, description='Бренды (ID)', type=openapi.TYPE_NUMBER),
-        openapi.Parameter('food_category', openapi.IN_QUERY, description='Категории питания (ID)', type=openapi.TYPE_NUMBER),
+        openapi.Parameter('category', openapi.IN_QUERY, description='Категории питания (ID)', type=openapi.TYPE_NUMBER),
         openapi.Parameter('product_name', openapi.IN_QUERY, description='Название товара', type=openapi.TYPE_STRING)
     ])
     @action(methods=['get'], detail=True)
@@ -147,7 +140,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         openapi.Parameter('min_price', openapi.IN_QUERY, description='Минимальная цена', type=openapi.TYPE_NUMBER),
         openapi.Parameter('max_price', openapi.IN_QUERY, description='Максимальная цена', type=openapi.TYPE_NUMBER),
         openapi.Parameter('brand', openapi.IN_QUERY, description='Бренды (ID)', type=openapi.TYPE_NUMBER),
-        openapi.Parameter('food_category', openapi.IN_QUERY, description='Категории питания (ID)', type=openapi.TYPE_NUMBER),
+        openapi.Parameter('category', openapi.IN_QUERY, description='Категории питания (ID)', type=openapi.TYPE_NUMBER),
         openapi.Parameter('product_name', openapi.IN_QUERY, description='Название товара', type=openapi.TYPE_STRING)
     ])
     @action(methods=['get'], detail=True)
@@ -185,7 +178,7 @@ class ProductSearchAPIView(APIView):
             return Response({'detail': 'Параметр не предоставлен'}, status=status.HTTP_400_BAD_REQUEST)
         
         sqs = SearchQuerySet().models(Product).autocomplete(name=query)
-        sqs = sqs.filter_or(brand_name=query, food_category_name=query)
+        sqs = sqs.filter_or(brand_name=query, category_name=query)
 
         products = [result.object for result in sqs]
         serializer = ProductSerializer(products, many=True)
@@ -333,3 +326,22 @@ class OrderViewSet(viewsets.ModelViewSet):
 class PromotionViewSet(viewsets.ModelViewSet):
     queryset = Promotion.objects.all()
     serializer_class = PromotionSerializer
+
+
+
+class CustomerReviewViewSet(viewsets.ModelViewSet):
+    queryset = CustomerReview.objects.all()
+    serializer_class = CustomerReviewSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context
+    
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        return response

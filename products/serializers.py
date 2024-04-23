@@ -1,5 +1,6 @@
-from .models import (Catalog,
-                    FoodCategory,
+import json
+from .models import (
+                    Category,
                     Brand,
                     Product,
                     ProductImage,
@@ -10,9 +11,8 @@ from .models import (Catalog,
                     Order,
                     OrderItem,
                     Promotion,
-                    BrandImage,
-                    ExtraInfo,
-                    ProductBrandImage,
+                    SubCategory,
+                    CustomerReview
                     )
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -21,27 +21,21 @@ from rest_framework import serializers
 User = get_user_model()
 
 
-class CatalogSerializer(serializers.ModelSerializer):
+
+class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Catalog
+        model = Category
         fields = '__all__'
 
-
-class FoodCategorySerializer(serializers.ModelSerializer):
+class SubCategorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = FoodCategory
+        model = SubCategory
         fields = '__all__'
 
 
 class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
-        fields = '__all__'
-
-
-class BrandImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BrandImage
         fields = '__all__'
 
 
@@ -67,51 +61,53 @@ class ReviewSerializer(serializers.ModelSerializer):
         return representation
 
 
-class ExtraInfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ExtraInfo
-        fields = '__all__'
-
-
-class ProductBrandImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductBrandImage
-        fields = '__all__'
-
 
 class ProductSerializer(serializers.ModelSerializer):
-    food_category_name = serializers.SerializerMethodField()
+    category_name = serializers.SerializerMethodField()
     brand_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = '__all__'
 
-    def get_food_category_name(self, obj):
-        return obj.food_category.name if obj.food_category else None
+    def get_category_name(self, obj):
+        return obj.category.name if obj.category else None
     
     def get_brand_name(self, obj):
         return obj.brand.name if obj.brand else None
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['food_category_name'] = FoodCategory.objects.get(id=representation['food_category']).name
+        representation['category_name'] = Category.objects.get(id=representation['category']).name
+        representation['subcategory_title'] = SubCategory.objects.get(id=representation['subcategory']).title
         representation['brand_name'] = Brand.objects.get(id=representation['brand']).name
+        extra_info_json = json.loads(instance.extra_info)
+        representation['extra_info'] = extra_info_json
+
 
         return representation
     
 
 class ProductGetSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Product
         fields = '__all__'
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['food_category_name'] = FoodCategory.objects.get(id=representation['food_category']).name
+        representation['category_name'] = Category.objects.get(id=representation['category']).name
+        representation['subcategory_title'] = SubCategory.objects.get(id=representation['subcategory']).title
         representation['brand_name'] = Brand.objects.get(id=representation['brand']).name
         representation['in_favorite'] = True if Favorite.objects.filter(product=instance).exists else False
         representation['reviews'] = ReviewSerializer(instance.reviews.filter(product_id=instance.id), many=True).data
+        
+        product_images = ProductImage.objects.filter(product=instance)
+        representation['product_images'] = [image.image.url for image in product_images]
+        representation['brand_image'] = Brand.objects.get(id=representation['brand']).image.url
+        extra_info_json = json.loads(instance.extra_info)
+        representation['extra_info'] = extra_info_json
+
 
         return representation
 
@@ -180,3 +176,20 @@ class PromotionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Promotion
         fields = '__all__'
+
+
+class CustomerReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerReview
+        fields = '__all__'
+        read_only_fields = ('id', 'user', )
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
+    
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['user_name'] = User.objects.get(id=representation['user']).name
+        return representation
