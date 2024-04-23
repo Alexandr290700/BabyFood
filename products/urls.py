@@ -5,7 +5,6 @@ from .views import (
     FoodCategoryViewSet,
     BrandViewSet,
     ProductViewSet,
-    ProductImageViewSet,
     CarouselItemViewSet,
     ReviewViewSet,
     FavoriteListAPIView,
@@ -14,7 +13,9 @@ from .views import (
     ProductSearchAPIView,
     PromotionViewSet,
     BrandImageViewSet,
-    ExtraInfoViewSet,
+    NewProductViewSet,
+    PopularProductViewSet,
+    RecommendedProductViewSet,
 )
 
 
@@ -24,14 +25,15 @@ router.register('catalogs', CatalogViewSet)
 router.register('food_categories', FoodCategoryViewSet)
 router.register('brands', BrandViewSet)
 router.register('products', ProductViewSet)
-router.register('product_images', ProductImageViewSet)
 router.register('carousel_items', CarouselItemViewSet)
 router.register('reviews', ReviewViewSet)
 router.register(r'carts', CartViewSet)
 router.register(r'orders', OrderViewSet)
 router.register('promotion', PromotionViewSet)
 router.register('brand_image', BrandImageViewSet)
-router.register('extra_info', ExtraInfoViewSet)
+router.register(r'new-products', NewProductViewSet, basename='new-products')
+router.register(r'popular-products', PopularProductViewSet, basename='popular-products')
+router.register(r'recommended-products', RecommendedProductViewSet, basename='recommended-products')
 
 urlpatterns = [
     path('', include(router.urls)),

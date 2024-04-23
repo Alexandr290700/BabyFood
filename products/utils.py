@@ -1,11 +1,10 @@
 import environ
 import asyncio
-from aiogram import Bot, types
-
-from .models import Review
+from aiogram import Bot
 
 env = environ.Env()
 environ.Env.read_env(env_file=".env")
+
 
 BOT_TOKEN = env('TG_BOT_TOKEN')
 OPERATORS = env('OPERATORS_CHAT_ID').split(',')

@@ -6,20 +6,20 @@ from django.urls import reverse
 User = get_user_model()
 
 
-class Catalog(models.Model):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-    
-
 class FoodCategory(models.Model):
     name = models.CharField(max_length=150)
     image = models.ImageField(upload_to='media/food_category/', null=True, blank=True)
-    catalog = models.ForeignKey(Catalog, on_delete=models.CASCADE, related_name='food_categories')
 
     def __str__(self):
-        return f"{self.name} ({self.catalog.name})"
+        return f"{self.name}"
+    
+
+class Catalog(models.Model):
+    name = models.CharField(max_length=100)
+    food_category = models.ForeignKey(FoodCategory, on_delete=models.CASCADE, related_name='catalog')
+
+    def __str__(self):
+        return f"{self.name} ({self.food_category.name})"
 
 
 class Brand(models.Model):
@@ -60,6 +60,7 @@ class Product(models.Model):
     default_image = models.ImageField(upload_to='media/defaults/', null=True, blank=True)
     brand_image = models.ForeignKey(ProductBrandImage, on_delete=models.CASCADE, related_name='brand_image')
     weight = models.IntegerField()
+    status = models.CharField(max_length=20, choices=[('New', 'New'), ('Regular', 'Regular')], default='Regular')
     rating = models.IntegerField(default=1, choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')])
     discount = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -89,15 +90,24 @@ class CarouselItem(models.Model):
         return f"Carousel Item {self.id}"
     
 
-class Review(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+class ReviewProduct(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews_product")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews_product')
     text = models.TextField()
     rating = models.IntegerField(default=1, choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')])
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Review by {self.user.name} for {self.product.name}"
+    
+
+class Review(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.name} - {self.created_at}"
     
 
 class Favorite(models.Model):

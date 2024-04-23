@@ -2,17 +2,18 @@ from .models import (Catalog,
                     FoodCategory,
                     Brand,
                     Product,
-                    ProductImage,
                     CarouselItem,
-                    Review,
+                    ReviewProduct,
                     Favorite,
                     Cart,
                     Order,
                     OrderItem,
                     Promotion,
                     BrandImage,
+                    ProductImage,
                     ExtraInfo,
                     ProductBrandImage,
+                    Review
                     )
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -51,9 +52,9 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ReviewSerializer(serializers.ModelSerializer):
+class ReviewProductSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Review
+        model = ReviewProduct
         fields = '__all__'
         read_only_fields = ('id', 'user', )
 
@@ -65,7 +66,23 @@ class ReviewSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['user_name'] = User.objects.get(id=representation['user']).name
         return representation
+    
 
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = '__all__'
+        read_only_fields = ('id', 'user')
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['user_name'] = User.objects.get(id=representation['user']).name
+        return representation
+    
 
 class ExtraInfoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -82,6 +99,7 @@ class ProductBrandImageSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     food_category_name = serializers.SerializerMethodField()
     brand_name = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -111,9 +129,27 @@ class ProductGetSerializer(serializers.ModelSerializer):
         representation['food_category_name'] = FoodCategory.objects.get(id=representation['food_category']).name
         representation['brand_name'] = Brand.objects.get(id=representation['brand']).name
         representation['in_favorite'] = True if Favorite.objects.filter(product=instance).exists else False
-        representation['reviews'] = ReviewSerializer(instance.reviews.filter(product_id=instance.id), many=True).data
+        representation['reviews'] = ReviewProductSerializer(instance.reviews.filter(product_id=instance.id), many=True).data
 
         return representation
+    
+
+class NewProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'description', 'price', 'default_image', 'created_at']
+
+
+class PopularProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'description', 'price', 'default_image', 'rating']
+
+
+class RecommendedProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'description', 'price', 'default_image', 'rating', 'discount']
 
 
 class FavoriteSerializer(serializers.ModelSerializer):

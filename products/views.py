@@ -1,13 +1,13 @@
 import asyncio
 from .utils import send_new_review
-from django.shortcuts import render
+from django.utils import timezone
 from .models import (Catalog,
                      FoodCategory,
                      Brand,
                      Product,
                      ProductImage,
                      CarouselItem,
-                     Review,
+                     ReviewProduct,
                      Favorite,
                      Cart,
                      Order,
@@ -15,6 +15,7 @@ from .models import (Catalog,
                      BrandImage,
                      ExtraInfo,
                      ProductBrandImage,
+                     Review
                      )
 from rest_framework import viewsets, status, generics
 from rest_framework.permissions import IsAuthenticated
@@ -29,7 +30,7 @@ from .serializers import (CatalogSerializer,
                           ProductGetSerializer,
                           ProductImageSerializer,
                           CarouselItemSerializer,
-                          ReviewSerializer,
+                          ReviewProductSerializer,
                           FavoriteSerializer,
                           CartSerializer,
                           CartListSerializer,
@@ -38,25 +39,29 @@ from .serializers import (CatalogSerializer,
                           BrandImageSerializer,
                           ExtraInfoSerializer,
                           ProductBrandImageSerializer,
+                          NewProductSerializer,
+                          PopularProductSerializer,
+                          RecommendedProductSerializer,
+                          ReviewSerializer
                           )
 
 from haystack.query import SearchQuerySet
 from rest_framework.views import APIView
 
 
-class CatalogViewSet(viewsets.ModelViewSet):
-    queryset = Catalog.objects.all()
-    serializer_class = CatalogSerializer
-
-
 class FoodCategoryViewSet(viewsets.ModelViewSet):
     queryset = FoodCategory.objects.all()
     serializer_class = FoodCategorySerializer
 
+
+class CatalogViewSet(viewsets.ModelViewSet):
+    queryset = Catalog.objects.all()
+    serializer_class = CatalogSerializer
+
     @action(methods=['get'], detail=True)
     def get_by_category(self, request, pk=None):
-        food_categories = FoodCategory.objects.filter(catalog=pk)
-        serializer = FoodCategorySerializer(food_categories, many=True)
+        food_categories = Catalog.objects.filter(food_category=pk)
+        serializer = CatalogSerializer(food_categories, many=True)
         return Response({'products': serializer.data})
     
 
@@ -192,7 +197,20 @@ class ProductSearchAPIView(APIView):
         return Response(serializer.data)
         
     
+class NewProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.filter(status='New', created_at__gte=timezone.now() - timezone.timedelta(days=14))
+    serializer_class = NewProductSerializer
     
+
+class PopularProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.order_by('-rating')[:10]
+    serializer_class = PopularProductSerializer
+
+
+class RecommendedProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.filter(discount__gt=0).order_by('-rating')[:10]
+    serializer_class = RecommendedProductSerializer
+
 
 class ProductImageViewSet(viewsets.ModelViewSet):
     queryset = ProductImage.objects.all()
@@ -204,9 +222,9 @@ class CarouselItemViewSet(viewsets.ModelViewSet):
     serializer_class = CarouselItemSerializer
 
 
-class ReviewViewSet(viewsets.ModelViewSet):
-    queryset = Review.objects.all()
-    serializer_class = ReviewSerializer
+class ReviewProductViewSet(viewsets.ModelViewSet):
+    queryset = ReviewProduct.objects.all()
+    serializer_class = ReviewProductSerializer
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -248,6 +266,36 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
         product.rating = new_rating // reviews_count
         product.save()
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context
+    
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        review = serializer.instance
+
+        date = review.created_at.strftime('%Y-%m-%d')
+        time = review.created_at.strftime('%H:%M:%S')
+        message = f"Новый отзыв на сайте: \n\n" \
+                  f"Пользователь: {review.user.name}\n" \
+                  f"Email: {review.user.email}\n" \
+                  f"Дата: {date} в {time}\n\n" \
+                  f"Отзыв: {review.text}"
+        
+        asyncio.run(send_new_review(message))
+
+        return response
 
 
 class FavoriteListAPIView(generics.ListAPIView):
