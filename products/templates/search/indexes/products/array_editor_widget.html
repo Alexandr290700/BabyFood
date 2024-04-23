@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Array Editor Widget</title>
+    <style>
+        .value-entry {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="{{ widget.attrs.id }}_container" data-name="{{ widget.name }}">
+    <button type="button" onclick="addValue('{{ widget.attrs.id }}')">Добавить</button>
+    <div id="{{ widget.attrs.id }}_items">
+    </div>
+    <textarea name="{{ widget.name }}" id="{{ widget.attrs.id }}" style="display:none;"></textarea>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeWidget('{{ widget.attrs.id }}', '{{ widget.value|escapejs }}');
+    });
+
+    function initializeWidget(containerId, initialValue) {
+        const container = document.getElementById(containerId + '_items');
+        if (initialValue) {
+            const data = JSON.parse(initialValue);
+            data.forEach(value => {
+                addValue(containerId, value);
+            });
+        }
+    }
+
+    function addValue(containerId, value = '') {
+        const container = document.getElementById(containerId + '_items');
+        const div = document.createElement('div');
+        div.className = 'value-entry';
+        div.innerHTML = `
+            <input type="text" placeholder="Значение" value="${value}" onchange="updateJSON('${containerId}')" />
+            <button type="button" onclick="removeValue(this)">Удалить</button>
+        `;
+        container.appendChild(div);
+        updateJSON(containerId);
+    }
+
+    function removeValue(button) {
+        const containerId = button.closest('div[id$="_items"]').id.replace('_items', '');
+        button.parentElement.remove();
+        updateJSON(containerId);
+    }
+
+    function updateJSON(containerId) {
+        const container = document.getElementById(containerId + '_items');
+        const values = Array.from(container.children).map(entry => entry.children[0].value);
+        document.getElementById(containerId).value = JSON.stringify(values);
+    }
+</script>
+
+</body>
+</html>

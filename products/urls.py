@@ -1,10 +1,10 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    CatalogViewSet,
-    FoodCategoryViewSet,
+    CategoryViewSet,
     BrandViewSet,
     ProductViewSet,
+    ProductImageViewSet,
     CarouselItemViewSet,
     ReviewViewSet,
     FavoriteListAPIView,
@@ -12,28 +12,24 @@ from .views import (
     OrderViewSet,
     ProductSearchAPIView,
     PromotionViewSet,
-    BrandImageViewSet,
-    NewProductViewSet,
-    PopularProductViewSet,
-    RecommendedProductViewSet,
+    SubCategoryViewSet,
+    CustomerReviewViewSet
 )
 
 
 router = DefaultRouter()
 
-router.register('catalogs', CatalogViewSet)
-router.register('food_categories', FoodCategoryViewSet)
+router.register('categories', CategoryViewSet)
 router.register('brands', BrandViewSet)
 router.register('products', ProductViewSet)
+router.register('product_images', ProductImageViewSet)
 router.register('carousel_items', CarouselItemViewSet)
 router.register('reviews', ReviewViewSet)
 router.register(r'carts', CartViewSet)
 router.register(r'orders', OrderViewSet)
 router.register('promotion', PromotionViewSet)
-router.register('brand_image', BrandImageViewSet)
-router.register(r'new-products', NewProductViewSet, basename='new-products')
-router.register(r'popular-products', PopularProductViewSet, basename='popular-products')
-router.register(r'recommended-products', RecommendedProductViewSet, basename='recommended-products')
+router.register('subcategories', SubCategoryViewSet)
+router.register('customereviews', CustomerReviewViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

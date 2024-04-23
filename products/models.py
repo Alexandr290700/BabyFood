@@ -1,12 +1,13 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from ckeditor.fields import RichTextField
 
 
 User = get_user_model()
 
 
-class FoodCategory(models.Model):
+class Category(models.Model):
     name = models.CharField(max_length=150)
     image = models.ImageField(upload_to='media/food_category/', null=True, blank=True)
 
@@ -14,58 +15,36 @@ class FoodCategory(models.Model):
         return f"{self.name}"
     
 
-class Catalog(models.Model):
-    name = models.CharField(max_length=100)
-    food_category = models.ForeignKey(FoodCategory, on_delete=models.CASCADE, related_name='catalog')
+class SubCategory(models.Model):
+    title = models.CharField(max_length=150)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.name} ({self.food_category.name})"
+        return f"{self.title}"
 
 
 class Brand(models.Model):
     name = models.CharField(max_length=100)
-    images = models.ImageField(upload_to='media/brand/')
+    image = models.ImageField(upload_to='media/brand/')
 
     def __str__(self):
         return self.name
-    
-
-class BrandImage(models.Model):
-    brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='brand_images')
-    images = models.ImageField(upload_to='media/brand/')
-
-    def __str__(self):
-        return self.brand.name
-    
-
-class ExtraInfo(models.Model):
-    info = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.info
-    
-
-class ProductBrandImage(models.Model):
-    images = models.ImageField(upload_to='media/product_brand/')
-
-    def __str__(self):
-        return f'Brand image {self.id}'
 
 
 class Product(models.Model):
     name = models.CharField(max_length=300)
-    description = models.TextField()
-    extra_info = models.ManyToManyField(ExtraInfo, blank=True)
+    description = RichTextField()
+    arrived = models.BooleanField(default=True)
     price = models.DecimalField(max_digits=15, decimal_places=2)
     default_image = models.ImageField(upload_to='media/defaults/', null=True, blank=True)
-    brand_image = models.ForeignKey(ProductBrandImage, on_delete=models.CASCADE, related_name='brand_image')
     weight = models.IntegerField()
-    status = models.CharField(max_length=20, choices=[('New', 'New'), ('Regular', 'Regular')], default='Regular')
     rating = models.IntegerField(default=1, choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')])
     discount = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-    food_category = models.ForeignKey(FoodCategory, on_delete=models.CASCADE, related_name='products')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
+    subcategory = models.ForeignKey(SubCategory, on_delete=models.CASCADE, related_name='products', blank=True, null=True)
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='products')
+    extra_info = models.TextField(default='[]')
 
     def __str__(self):
         return f"{self.name} - {self.brand.name}"
@@ -76,7 +55,7 @@ class Product(models.Model):
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_images')
-    images = models.ImageField(upload_to='media/products/')
+    image = models.ImageField(upload_to='media/products/')
 
     def __str__(self):
         return self.product.name
@@ -90,24 +69,15 @@ class CarouselItem(models.Model):
         return f"Carousel Item {self.id}"
     
 
-class ReviewProduct(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews_product")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews_product')
+class Review(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
     text = models.TextField()
     rating = models.IntegerField(default=1, choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')])
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Review by {self.user.name} for {self.product.name}"
-    
-
-class Review(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
-    text = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.user.name} - {self.created_at}"
     
 
 class Favorite(models.Model):
@@ -159,3 +129,12 @@ class Promotion(models.Model):
 
     def __str__(self):
         return f'Promotion {self.pk}'
+
+class CustomerReview(models.Model):
+    text = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=150, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f'{self.text} - {self.user} - {self.created_at}'

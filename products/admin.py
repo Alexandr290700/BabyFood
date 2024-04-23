@@ -1,43 +1,28 @@
-from typing import Any
 from django.contrib import admin
-from django import forms
-from .models import (Catalog,
-                     FoodCategory,
-                     Brand,
-                     Product,
-                     CarouselItem,
-                     ReviewProduct,
-                     Favorite,
-                     Cart,
-                     Order,
-                     Promotion,
-                     ExtraInfo,
-                     ProductImage,
-                     ProductBrandImage,
-                     BrandImage,
-                     Review
-                     )
+from django.forms import ModelForm
+from .models import Category, Brand, Product, ProductImage, CarouselItem, Review, Favorite, Cart, Order, Promotion, CustomerReview, SubCategory
+from .utils import ArrayEditorWidget
 
-admin.site.register([Catalog, FoodCategory, Brand, CarouselItem, ReviewProduct, Favorite, Cart, Order, Promotion,ExtraInfo, ProductImage, ProductBrandImage, BrandImage, Review])
+admin.site.register([Category, Brand, ProductImage, CarouselItem, Review, Favorite, Cart, Order, Promotion, SubCategory, CustomerReview])
 
-class ProductAdminForm(forms.ModelForm):
-    extra_info = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
 
+
+class ProductAdminForm(ModelForm):
     class Meta:
         model = Product
         fields = '__all__'
         widgets = {
-            'description': forms.Textarea(attrs={'cols': 80, 'rows': 10})
+            'extra_info': ArrayEditorWidget(),
         }
-
 
 class ProductAdmin(admin.ModelAdmin):
     form = ProductAdminForm
-
+    
     def save_model(self, request, obj, form, change):
-        extra_info = form.cleaned_data.get('extra_info')
-        if extra_info:
-            obj.extra_info = extra_info.split(',')
+        extra_info_json = form.cleaned_data.get('extra_info')
+        if extra_info_json:
+            obj.characteristics = str(extra_info_json)
         super().save_model(request, obj, form, change)
+
 
 admin.site.register(Product, ProductAdmin)
