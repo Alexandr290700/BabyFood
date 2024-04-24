@@ -249,7 +249,7 @@ ACCOUNT_AUTHENTICATION_METHOD = 'email'
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
-        'URL': 'http://localhost:9200/',
+        'URL': f'http://{config('SEARCH_HOST')}:9200/',
         'INDEX_NAME': 'products',
         'INCLUDE_SPELLING': True,
         'EXCLUDED_INDEXES': ['core.products.search_indexes.ProductIndex'],
