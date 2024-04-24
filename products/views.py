@@ -49,12 +49,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
-    @action(methods=['get'], detail=True)
-    def get_by_category(self, request, pk=None):
-        categories = Category.objects.filter(catalog=pk)
-        serializer = CategorySerializer(categories, many=True)
-        return Response({'products': serializer.data})
-    
 
 class SubCategoryViewSet(viewsets.ModelViewSet):
     queryset = SubCategory.objects.all()
