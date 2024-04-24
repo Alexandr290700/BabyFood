@@ -246,10 +246,12 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 
+SEARCH_HOST = config('SEARCH_HOST')
+
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
-        'URL': f'http://{config('SEARCH_HOST')}:9200/',
+        'URL': f'http://{SEARCH_HOST}:9200/',
         'INDEX_NAME': 'products',
         'INCLUDE_SPELLING': True,
         'EXCLUDED_INDEXES': ['core.products.search_indexes.ProductIndex'],
