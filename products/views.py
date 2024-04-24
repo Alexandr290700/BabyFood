@@ -1,6 +1,5 @@
 import asyncio
 from .utils import send_new_review
-from django.shortcuts import render
 from .models import (
                      Category,
                      Brand,
@@ -21,6 +20,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from django_filters.rest_framework import DjangoFilterBackend
 from .serializers import (
                           CategorySerializer,
                           BrandSerializer,
@@ -78,26 +78,37 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        min_price = self.request.query_params.get('min_price', None)
-        max_price = self.request.query_params.get('max_price', None)
-        brand = self.request.query_params.getlist('brand', [])
-        category = self.request.query_params.getlist('category', [])
-        product_name = self.request.query_params.get('product_name', None)
+        """
+        Optionally filter the products based on query parameters: brand, category,
+        price range, arrival status, and rating.
+        """
+        queryset = Product.objects.all()
+        min_price = self.request.query_params.get('min_price')
+        max_price = self.request.query_params.get('max_price')
+        new = self.request.query_params.get('new')
+        rating = self.request.query_params.get('rating')
+        category = self.request.query_params.get('category')
+        subcategory = self.request.query_params.get('subcategory')
+        brand = self.request.query_params.get('brand')
 
         if min_price is not None:
             queryset = queryset.filter(price__gte=min_price)
         if max_price is not None:
             queryset = queryset.filter(price__lte=max_price)
-        if brand:
-            queryset = queryset.filter(brand__id__in=brand)
-        if category:
-            queryset = queryset.filter(category__id__in=category)
-        if product_name:
-            queryset = queryset.filter(name=product_name)
+        if new is not None:
+            queryset = queryset.filter(arrived=new.lower() in ['true', '1', 'yes'])
+        if rating is not None:
+            queryset = queryset.filter(rating=rating)
+        if category is not None:
+            queryset = queryset.filter(category__name=category)
+        if subcategory is not None:
+            queryset = queryset.filter(subcategory__title=subcategory)
+        if brand is not None:
+            queryset = queryset.filter(brand__name=brand)
 
         return queryset
-    
+
+   
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return ProductGetSerializer

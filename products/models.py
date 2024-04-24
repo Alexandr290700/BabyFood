@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from ckeditor.fields import RichTextField
+from tinymce.models import HTMLField
 
 
 User = get_user_model()
@@ -33,7 +34,7 @@ class Brand(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=300)
-    description = RichTextField()
+    description = HTMLField()
     arrived = models.BooleanField(default=True)
     price = models.DecimalField(max_digits=15, decimal_places=2)
     default_image = models.ImageField(upload_to='media/defaults/', null=True, blank=True)

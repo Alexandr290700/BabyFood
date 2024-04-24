@@ -22,6 +22,9 @@ DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS','').split(',')
 
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # Application definition
 
@@ -35,6 +38,7 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'rest_framework',
+    'django_filters',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -44,6 +48,7 @@ INSTALLED_APPS = [
     # 'haystack',
     'ckeditor',
     'multiupload',
+    'tinymce',
 
     'users',
     'products',
@@ -154,7 +159,9 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 5,
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -288,4 +295,19 @@ LOGGING = {
             'format': '%(levelname)s %(message)s'
         },
     },
+}
+
+
+TINYMCE_DEFAULT_CONFIG = {
+    'theme': 'silver',
+    'height': 500,
+    'menubar': 'file edit view insert format tools table help',
+    'plugins': [
+        'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount'
+    ],
+    'toolbar': 'undo redo | formatselect | ' 'bold italic backcolor | alignleft aligncenter ' 'alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+    'content_css': [
+        '//fonts.googleapis.com/css?family=Lato:300,300i,400,400i',
+        '//www.tiny.cloud/css/codepen.min.css'
+    ]
 }

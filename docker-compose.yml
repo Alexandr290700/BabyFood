@@ -40,18 +40,18 @@ services:
       - /etc/letsencrypt/:/etc/letsencrypt/
 
   
-  elasticsearch:
-    image: elasticsearch:7.17.20
-    environment:
-      - discovery.type=single-node
-    volumes:
-      - esdata:/usr/share/elasticsearch/data
-    ports:
-      - "9200:9200"
-      - "9300:9300"
+  # elasticsearch:
+  #   image: elasticsearch:7.17.20
+  #   environment:
+  #     - discovery.type=single-node
+  #   volumes:
+  #     - esdata:/usr/share/elasticsearch/data
+  #   ports:
+  #     - "9200:9200"
+  #     - "9300:9300"
 
 volumes:
   db:
   static_volume:
   media_volume:
-  esdata:
+  # esdata:
