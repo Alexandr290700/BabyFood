@@ -138,4 +138,4 @@ class CustomerReview(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return f'{self.text} - {self.user} - {self.created_at}'
+        return f'{self.user} - {self.created_at}'
