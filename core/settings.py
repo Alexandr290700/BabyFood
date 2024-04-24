@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'drf_yasg',
     'djoser',
-    'haystack',
+    # 'haystack',
     'ckeditor',
     'multiupload',
 
@@ -248,18 +248,18 @@ ACCOUNT_AUTHENTICATION_METHOD = 'email'
 
 SEARCH_HOST = config('SEARCH_HOST')
 
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
-        'URL': f'http://{SEARCH_HOST}:9200/',
-        'INDEX_NAME': 'products',
-        'INCLUDE_SPELLING': True,
-        'EXCLUDED_INDEXES': ['core.products.search_indexes.ProductIndex'],
-        'HAYSTACK_DOCUMENT_FIELD': 'content',
-    },
-}
+# HAYSTACK_CONNECTIONS = {
+#     'default': {
+#         'ENGINE': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+#         'URL': f'http://{SEARCH_HOST}:9200/',
+#         'INDEX_NAME': 'products',
+#         'INCLUDE_SPELLING': True,
+#         'EXCLUDED_INDEXES': ['core.products.search_indexes.ProductIndex'],
+#         'HAYSTACK_DOCUMENT_FIELD': 'content',
+#     },
+# }
 
-HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+# HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 
 
 LOGGING = {

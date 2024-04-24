@@ -38,7 +38,7 @@ from .serializers import (
                           CustomerReviewSerializer
                           )
 
-from haystack.query import SearchQuerySet
+# from haystack.query import SearchQuerySet
 from rest_framework.views import APIView
 
 import logging
@@ -165,24 +165,24 @@ class ProductViewSet(viewsets.ModelViewSet):
         return Response({"In Favorite": favor})
     
 
-class ProductSearchAPIView(APIView):
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter('q',openapi.IN_QUERY, description='Строка поискового запроса', type=openapi.TYPE_STRING)
-        ]
-    )
-    def get(self, request):
-        query = request.query_params.get('q', '').strip()
+# class ProductSearchAPIView(APIView):
+#     @swagger_auto_schema(
+#         manual_parameters=[
+#             openapi.Parameter('q',openapi.IN_QUERY, description='Строка поискового запроса', type=openapi.TYPE_STRING)
+#         ]
+#     )
+#     def get(self, request):
+#         query = request.query_params.get('q', '').strip()
 
-        if not query:
-            return Response({'detail': 'Параметр не предоставлен'}, status=status.HTTP_400_BAD_REQUEST)
+#         if not query:
+#             return Response({'detail': 'Параметр не предоставлен'}, status=status.HTTP_400_BAD_REQUEST)
         
-        sqs = SearchQuerySet().models(Product).autocomplete(name=query)
-        sqs = sqs.filter_or(brand_name=query, category_name=query)
+#         sqs = SearchQuerySet().models(Product).autocomplete(name=query)
+#         sqs = sqs.filter_or(brand_name=query, category_name=query)
 
-        products = [result.object for result in sqs]
-        serializer = ProductSerializer(products, many=True)
-        return Response(serializer.data)
+#         products = [result.object for result in sqs]
+#         serializer = ProductSerializer(products, many=True)
+#         return Response(serializer.data)
         
     
     
