@@ -143,7 +143,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         openapi.Parameter('category', openapi.IN_QUERY, description='Категории питания (ID)', type=openapi.TYPE_NUMBER),
         openapi.Parameter('product_name', openapi.IN_QUERY, description='Название товара', type=openapi.TYPE_STRING)
     ])
-    @action(methods=['get'], detail=True)
+    @action(methods=['get'], detail=False)
     def recommended(self, request):
         recommended_products = Product.objects.order_by('-rating', '-created_at')[:50]
         serializer = self.get_serializer(recommended_products, many=True)
