@@ -156,6 +156,13 @@ class ProductViewSet(viewsets.ModelViewSet):
         return Response({'products': serializer.data})
     
 
+    @action(methods=['get'], detail=False)
+    def new_products(self, request):
+        new_products = Product.objects.filter(arrived=True)
+        serializer = self.get_serializer(new_products, many=True)
+        return Response({'products': serializer.data})
+    
+
     @action(methods=['POST'], detail=True)
     def favorite(self, request, pk=None):
         product = self.get_object()
