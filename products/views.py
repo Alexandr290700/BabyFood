@@ -18,9 +18,9 @@ from rest_framework import viewsets, status, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.filters import SearchFilter
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from django_filters.rest_framework import DjangoFilterBackend
 from .serializers import (
                           CategorySerializer,
                           BrandSerializer,
@@ -48,6 +48,7 @@ logger = logging.getLogger(__name__)
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    pagination_class = None
 
 
 class SubCategoryViewSet(viewsets.ModelViewSet):
@@ -64,12 +65,15 @@ class SubCategoryViewSet(viewsets.ModelViewSet):
 class BrandViewSet(viewsets.ModelViewSet):
     queryset = Brand.objects.all()
     serializer_class = BrandSerializer
+    pagination_class = None
 
 
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ['name']
 
     def get_queryset(self):
         """
