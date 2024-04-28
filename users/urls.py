@@ -3,8 +3,8 @@ from .views import CustomTokenObtainPairView, CustomTokenRefreshView, CustomToke
 
 
 urlpatterns = [
-    # path('users/activations/', CustomUserViewSet.as_view({"post": "activation"}), name="user-activation"),
-    # path('users/resend_activation/', CustomUserViewSet.as_view({"post": "resend_activation"}), name="user-resend-activation"),
+    path('users/activation/', CustomUserViewSet.as_view({"post": "activation"}), name="user-activation"),
+    path('users/resend_activation/', CustomUserViewSet.as_view({"post": "resend_activation"}), name="user-resend-activation"),
     path('users/', CustomUserViewSet.as_view({"post": "create"}), name="user-list"),
     path('users/set_password/', CustomUserViewSet.as_view({"post": "set_password"}), name="user-set-password"),
     path('users/reset_password/', CustomUserViewSet.as_view({"post": "reset_password"}), name="user-reset-password"),
