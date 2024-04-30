@@ -3,7 +3,9 @@ from djoser.views import UserViewSet as DjoserViewSet
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
-from rest_framework.decorators import action
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import status
+from rest_framework.response import Response
 
 
 User = get_user_model()
@@ -50,7 +52,17 @@ class CustomUserViewSet(DjoserViewSet):
         )
     )
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        response = super().create(request, *args, **kwargs)
+        if response.status_code == status.HTTP_201_CREATED:
+            user = User.objects.get(email=response.data['email'])
+            user.is_active = True
+            user.save()
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }, status=status.HTTP_201_CREATED)
+        return response
     
     
     @swagger_auto_schema(
