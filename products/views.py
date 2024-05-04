@@ -224,13 +224,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        # headers = self.get_success_headers(serializer.data)
 
-        review = serializer.instance
-
+        review = Review.objects.latest('id')
+        
         product_id = request.data.get('product')
         if product_id:
             product = Product.objects.get(id=product_id)
@@ -257,6 +253,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
         product.rating = new_rating // reviews_count
         product.save()
+
 
 
 class FavoriteListAPIView(generics.ListAPIView):
