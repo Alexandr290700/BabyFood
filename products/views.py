@@ -178,7 +178,7 @@ class ProductSearchAPIView(APIView):
             return Response({'detail': 'Параметр не предоставлен'}, status=status.HTTP_400_BAD_REQUEST)
         
         sqs = SearchQuerySet().models(Product).autocomplete(name=query)
-        sqs = sqs.filter_or(brand_name=query, category_name=query)
+        sqs = sqs.filter_or(brand_name=query, sub_category_name=query)
 
         products = [result.object for result in sqs]
         serializer = ProductSerializer(products, many=True)
