@@ -23,6 +23,17 @@ services:
       - "8000"
     command: gunicorn --bind 0.0.0.0:8002 core.wsgi:application
 
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - static_volume:/app/static
+      - media_volume:/app/media
+    command: celery -A core worker --loglevel=info
+
   nginx:
     build:
       context: ./nginx
