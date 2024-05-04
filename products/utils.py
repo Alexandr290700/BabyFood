@@ -1,9 +1,6 @@
 import environ
 import asyncio
-from django import forms
-from aiogram import Bot, types
-
-from .models import Review
+from aiogram import Bot
 
 env = environ.Env()
 environ.Env.read_env(env_file=".env")
@@ -33,7 +30,6 @@ class ArrayEditorWidget(Widget):
             }
         }
         return mark_safe(render_to_string('search/indexes/products/array_editor_widget.html', context))
-
 
 
 if __name__ == '__main__':

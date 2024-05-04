@@ -22,8 +22,6 @@ services:
     expose:
       - "8000"
     command: gunicorn --bind 0.0.0.0:8002 core.wsgi:application
-    depends_on:
-      - elasticsearch
 
   nginx:
     build:
@@ -41,12 +39,19 @@ services:
       - media_volume:/app/media
       - /etc/letsencrypt/:/etc/letsencrypt/
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
-    ports:
-      - "9201:9200"
-      - "9301:9300"
+  
+  # elasticsearch:
+  #   image: elasticsearch:7.17.20
+  #   environment:
+  #     - discovery.type=single-node
+  #   volumes:
+  #     - esdata:/usr/share/elasticsearch/data
+  #   ports:
+  #     - "9200:9200"
+  #     - "9300:9300"
+
 volumes:
   db:
   static_volume:
   media_volume:
+  # esdata:

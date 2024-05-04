@@ -44,7 +44,8 @@ urlpatterns = [
          cache_timeout=0), name='schema-swagger-ui'),
     path('', include('users.urls')),
     path('', include('products.urls')),
-    path('search/', include('haystack.urls'))
+    path('tinymce/', include('tinymce.urls')),
+    # path('search/', include('haystack.urls'))
 ]
 
 

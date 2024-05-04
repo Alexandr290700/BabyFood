@@ -1,6 +1,5 @@
 import asyncio
 from .utils import send_new_review
-from django.shortcuts import render
 from .models import (
                      Category,
                      Brand,
@@ -19,6 +18,7 @@ from rest_framework import viewsets, status, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.filters import SearchFilter
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from .serializers import (
@@ -38,7 +38,7 @@ from .serializers import (
                           CustomerReviewSerializer
                           )
 
-from haystack.query import SearchQuerySet
+# from haystack.query import SearchQuerySet
 from rest_framework.views import APIView
 
 import logging
@@ -48,13 +48,8 @@ logger = logging.getLogger(__name__)
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    pagination_class = None
 
-    @action(methods=['get'], detail=True)
-    def get_by_category(self, request, pk=None):
-        categories = Category.objects.filter(catalog=pk)
-        serializer = CategorySerializer(categories, many=True)
-        return Response({'products': serializer.data})
-    
 
 class SubCategoryViewSet(viewsets.ModelViewSet):
     queryset = SubCategory.objects.all()
@@ -70,34 +65,48 @@ class SubCategoryViewSet(viewsets.ModelViewSet):
 class BrandViewSet(viewsets.ModelViewSet):
     queryset = Brand.objects.all()
     serializer_class = BrandSerializer
+    pagination_class = None
 
 
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ['name']
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        min_price = self.request.query_params.get('min_price', None)
-        max_price = self.request.query_params.get('max_price', None)
-        brand = self.request.query_params.getlist('brand', [])
-        category = self.request.query_params.getlist('category', [])
-        product_name = self.request.query_params.get('product_name', None)
+        """
+        Optionally filter the products based on query parameters: brand, category,
+        price range, arrival status, and rating.
+        """
+        queryset = Product.objects.all()
+        min_price = self.request.query_params.get('min_price')
+        max_price = self.request.query_params.get('max_price')
+        new = self.request.query_params.get('new')
+        rating = self.request.query_params.get('rating')
+        category = self.request.query_params.get('category')
+        subcategory = self.request.query_params.get('subcategory')
+        brand = self.request.query_params.get('brand')
 
         if min_price is not None:
             queryset = queryset.filter(price__gte=min_price)
         if max_price is not None:
             queryset = queryset.filter(price__lte=max_price)
-        if brand:
-            queryset = queryset.filter(brand__id__in=brand)
-        if category:
-            queryset = queryset.filter(category__id__in=category)
-        if product_name:
-            queryset = queryset.filter(name=product_name)
+        if new is not None:
+            queryset = queryset.filter(arrived=new.lower() in ['true', '1', 'yes'])
+        if rating is not None:
+            queryset = queryset.filter(rating=rating)
+        if category is not None:
+            queryset = queryset.filter(category__name=category)
+        if subcategory is not None:
+            queryset = queryset.filter(subcategory__title=subcategory)
+        if brand is not None:
+            queryset = queryset.filter(brand__name=brand)
 
         return queryset
-    
+
+   
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return ProductGetSerializer
@@ -143,11 +152,18 @@ class ProductViewSet(viewsets.ModelViewSet):
         openapi.Parameter('category', openapi.IN_QUERY, description='Категории питания (ID)', type=openapi.TYPE_NUMBER),
         openapi.Parameter('product_name', openapi.IN_QUERY, description='Название товара', type=openapi.TYPE_STRING)
     ])
-    @action(methods=['get'], detail=True)
+    @action(methods=['get'], detail=False)
     def recommended(self, request):
         recommended_products = Product.objects.order_by('-rating', '-created_at')[:50]
         serializer = self.get_serializer(recommended_products, many=True)
 
+        return Response({'products': serializer.data})
+    
+
+    @action(methods=['get'], detail=False)
+    def new_products(self, request):
+        new_products = Product.objects.filter(arrived=True)
+        serializer = self.get_serializer(new_products, many=True)
         return Response({'products': serializer.data})
     
 
@@ -165,24 +181,24 @@ class ProductViewSet(viewsets.ModelViewSet):
         return Response({"In Favorite": favor})
     
 
-class ProductSearchAPIView(APIView):
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter('q',openapi.IN_QUERY, description='Строка поискового запроса', type=openapi.TYPE_STRING)
-        ]
-    )
-    def get(self, request):
-        query = request.query_params.get('q', '').strip()
+# class ProductSearchAPIView(APIView):
+#     @swagger_auto_schema(
+#         manual_parameters=[
+#             openapi.Parameter('q',openapi.IN_QUERY, description='Строка поискового запроса', type=openapi.TYPE_STRING)
+#         ]
+#     )
+#     def get(self, request):
+#         query = request.query_params.get('q', '').strip()
 
-        if not query:
-            return Response({'detail': 'Параметр не предоставлен'}, status=status.HTTP_400_BAD_REQUEST)
+#         if not query:
+#             return Response({'detail': 'Параметр не предоставлен'}, status=status.HTTP_400_BAD_REQUEST)
         
-        sqs = SearchQuerySet().models(Product).autocomplete(name=query)
-        sqs = sqs.filter_or(brand_name=query, sub_category_name=query)
+#         sqs = SearchQuerySet().models(Product).autocomplete(name=query)
+#         sqs = sqs.filter_or(brand_name=query, category_name=query)
 
-        products = [result.object for result in sqs]
-        serializer = ProductSerializer(products, many=True)
-        return Response(serializer.data)
+#         products = [result.object for result in sqs]
+#         serializer = ProductSerializer(products, many=True)
+#         return Response(serializer.data)
         
     
     

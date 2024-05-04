@@ -10,7 +10,6 @@ from .views import (
     FavoriteListAPIView,
     CartViewSet,
     OrderViewSet,
-    ProductSearchAPIView,
     PromotionViewSet,
     SubCategoryViewSet,
     CustomerReviewViewSet
@@ -34,5 +33,5 @@ router.register('customereviews', CustomerReviewViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('users/favorites/', FavoriteListAPIView.as_view()),
-    path('search/', ProductSearchAPIView.as_view(), name='product-search'),
+    # path('search/', ProductSearchAPIView.as_view(), name='product-search'),
 ]

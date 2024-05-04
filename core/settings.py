@@ -22,6 +22,9 @@ DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS','').split(',')
 
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # Application definition
 
@@ -35,15 +38,17 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'rest_framework',
+    'django_filters',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'drf_yasg',
     'djoser',
-    'haystack',
+    # 'haystack',
     'ckeditor',
     'multiupload',
+    'tinymce',
 
     'users',
     'products',
@@ -154,7 +159,9 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 5,
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -187,7 +194,7 @@ DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': '/password/reset/confirm/{uid}/{token}',
     'USERNAME_RESET_CONFIRM_URL': '/username/reset/confirm/{uid}/{token}',
     'ACTIVATION_URL': '/activate/?uid={uid}&token={token}',
-    'SEND_ACTIVATION_EMAIL': True,
+    'SEND_ACTIVATION_EMAIL': False,
     'EMAIL': {
         'activation': 'users.email.CustomActivationEmail',
     },
@@ -246,15 +253,61 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
-        'URL': 'http://localhost:9200/',
-        'INDEX_NAME': 'products',
-        'INCLUDE_SPELLING': True,
-        'EXCLUDED_INDEXES': ['core.products.search_indexes.ProductIndex'],
-        'HAYSTACK_DOCUMENT_FIELD': 'content',
+SEARCH_HOST = config('SEARCH_HOST')
+
+# HAYSTACK_CONNECTIONS = {
+#     'default': {
+#         'ENGINE': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+#         'URL': f'http://{SEARCH_HOST}:9200/',
+#         'INDEX_NAME': 'products',
+#         'INCLUDE_SPELLING': True,
+#         'EXCLUDED_INDEXES': ['core.products.search_indexes.ProductIndex'],
+#         'HAYSTACK_DOCUMENT_FIELD': 'content',
+#     },
+# }
+
+# HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/file.log',
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
     },
 }
 
-HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
+TINYMCE_DEFAULT_CONFIG = {
+    'theme': 'silver',
+    'height': 500,
+    'menubar': 'file edit view insert format tools table help',
+    'plugins': [
+        'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount'
+    ],
+    'toolbar': 'undo redo | formatselect | ' 'bold italic backcolor | alignleft aligncenter ' 'alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+    'content_css': [
+        '//fonts.googleapis.com/css?family=Lato:300,300i,400,400i',
+        '//www.tiny.cloud/css/codepen.min.css'
+    ]
+}

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from ckeditor.fields import RichTextField
+from tinymce.models import HTMLField
 
 
 User = get_user_model()
@@ -33,7 +34,7 @@ class Brand(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=300)
-    description = RichTextField()
+    description = HTMLField()
     arrived = models.BooleanField(default=True)
     price = models.DecimalField(max_digits=15, decimal_places=2)
     default_image = models.ImageField(upload_to='media/defaults/', null=True, blank=True)
@@ -50,7 +51,7 @@ class Product(models.Model):
         return f"{self.name} - {self.brand.name}"
     
     def get_absolute_url(self):
-        return reverse("product_detail", kwargs={"pk": self.pk})
+        return reverse("product_detail", kwargs={"pk": self.pk})   
     
 
 class ProductImage(models.Model):
@@ -137,4 +138,4 @@ class CustomerReview(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return f'{self.text} - {self.user} - {self.created_at}'
+        return f'{self.user} - {self.created_at}'
