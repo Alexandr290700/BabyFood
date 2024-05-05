@@ -142,7 +142,7 @@ class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = '__all__'
-        read_only_fields = ('id', 'users', 'created_at')
+        read_only_fields = ('id', 'user', 'created_at')
 
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
