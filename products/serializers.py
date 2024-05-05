@@ -5,6 +5,7 @@ from .models import (
                     Product,
                     ProductImage,
                     CarouselItem,
+                    MobileCarouselItem,
                     Review,
                     Favorite,
                     Cart,
@@ -122,6 +123,12 @@ class FavoriteSerializer(serializers.ModelSerializer):
 class CarouselItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarouselItem
+        fields = '__all__'
+
+
+class MobileCarouselItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MobileCarouselItem
         fields = '__all__'
 
 

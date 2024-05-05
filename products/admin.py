@@ -1,11 +1,11 @@
 from django.contrib import admin
 from django.forms import ModelForm
 from tinymce.widgets import TinyMCE
-from .models import Category, Brand, Product, ProductImage, CarouselItem, Review, Favorite, Cart, Order, Promotion, CustomerReview, SubCategory
+from .models import Category, Brand, Product, ProductImage, CarouselItem, Review, Favorite, Cart, Order, Promotion, CustomerReview, SubCategory, MobileCarouselItem
 from .utils import ArrayEditorWidget
 
 
-admin.site.register([Category, Brand, ProductImage, CarouselItem, Review, Favorite, Cart, Order, Promotion, SubCategory, CustomerReview])
+admin.site.register([Category, Brand, ProductImage, CarouselItem, Review, Favorite, Cart, Order, Promotion, SubCategory, CustomerReview, MobileCarouselItem])
 
 
 

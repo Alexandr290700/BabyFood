@@ -6,6 +6,7 @@ from .views import (
     ProductViewSet,
     ProductImageViewSet,
     CarouselItemViewSet,
+    MobileCarouselItemViewSet,
     ReviewViewSet,
     FavoriteListAPIView,
     CartViewSet,
@@ -23,6 +24,7 @@ router.register('brands', BrandViewSet)
 router.register('products', ProductViewSet)
 router.register('product_images', ProductImageViewSet)
 router.register('carousel_items', CarouselItemViewSet)
+router.register('mobile_carousel_items', MobileCarouselItemViewSet)
 router.register('reviews', ReviewViewSet)
 router.register(r'carts', CartViewSet)
 router.register(r'orders', OrderViewSet)

@@ -3,6 +3,7 @@ from .utils import send_new_review
 from .models import (
                      Category,
                      Brand,
+                     MobileCarouselItem,
                      Product,
                      ProductImage,
                      CarouselItem,
@@ -24,6 +25,7 @@ from drf_yasg.utils import swagger_auto_schema
 from .serializers import (
                           CategorySerializer,
                           BrandSerializer,
+                          MobileCarouselItemSerializer,
                           ProductSerializer,
                           ProductGetSerializer,
                           ProductImageSerializer,
@@ -211,6 +213,10 @@ class ProductImageViewSet(viewsets.ModelViewSet):
 class CarouselItemViewSet(viewsets.ModelViewSet):
     queryset = CarouselItem.objects.all()
     serializer_class = CarouselItemSerializer
+
+class MobileCarouselItemViewSet(viewsets.ModelViewSet):
+    queryset = MobileCarouselItem.objects.all()
+    serializer_class = MobileCarouselItemSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

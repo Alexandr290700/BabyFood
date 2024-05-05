@@ -61,6 +61,12 @@ class ProductImage(models.Model):
     def __str__(self):
         return self.product.name
 
+class MobileCarouselItem(models.Model):
+    images = models.ImageField(upload_to='media/mobile_carousel/')
+    description = models.TextField()
+
+    def __str__(self):
+        return f"Carousel Item {self.id}"
 
 class CarouselItem(models.Model):
     images = models.ImageField(upload_to='media/carousel/')
