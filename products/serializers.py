@@ -141,7 +141,7 @@ class CartListSerializer(serializers.ModelSerializer):
 class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
-        fields = ('id', 'user', 'product', 'created_at', 'count', )
+        fields = '__all__'
         read_only_fields = ('id', 'users', 'created_at')
 
     def create(self, validated_data):
@@ -160,7 +160,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('id', 'user', 'name', 'phone', 'email', 'shipping_address', 'items')
+        fields = fields = '__all__'
         read_only_fields = ('id', 'user', )
 
     def create(self, validated_data):
