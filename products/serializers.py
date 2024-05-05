@@ -133,7 +133,7 @@ class MobileCarouselItemSerializer(serializers.ModelSerializer):
 
 
 class CartListSerializer(serializers.ModelSerializer):
-    product = ProductSerializer
+    product = ProductSerializer()
     
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
