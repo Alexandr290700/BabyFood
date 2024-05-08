@@ -118,20 +118,21 @@ class ProductViewSet(viewsets.ModelViewSet):
     
     
     @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('min_price', openapi.IN_QUERY, description='Минимальная цена', type=openapi.TYPE_NUMBER),
-        openapi.Parameter('max_price', openapi.IN_QUERY, description='Максимальная цена', type=openapi.TYPE_NUMBER),
-        openapi.Parameter('brand', openapi.IN_QUERY, description='Бренды (ID)', type=openapi.TYPE_NUMBER),
-        openapi.Parameter('category', openapi.IN_QUERY, description='Категории (ID)', type=openapi.TYPE_NUMBER),
-        openapi.Parameter('product_name', openapi.IN_QUERY, description='Название товара', type=openapi.TYPE_STRING)
+    openapi.Parameter('min_price', openapi.IN_QUERY, description='Минимальная цена', type=openapi.TYPE_NUMBER),
+    openapi.Parameter('max_price', openapi.IN_QUERY, description='Максимальная цена', type=openapi.TYPE_NUMBER),
+    openapi.Parameter('brand', openapi.IN_QUERY, description='Бренды (ID)', type=openapi.TYPE_NUMBER),
+    openapi.Parameter('category', openapi.IN_QUERY, description='Категории (ID)', type=openapi.TYPE_NUMBER),
+    openapi.Parameter('product_name', openapi.IN_QUERY, description='Название товара', type=openapi.TYPE_STRING)
     ])
     @action(methods=['get'], detail=True)
     def get_by_category(self, request, pk=None):
-        products = Product.objects.filter(category=pk)
-        serializer = ProductSerializer(products, many=True)
+        queryset = Product.objects.filter(category=pk)
+        queryset = self.filter_queryset(queryset)
+        serializer = ProductSerializer(queryset, many=True)
 
         return Response({'products': serializer.data})
-    
-    
+
+
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('min_price', openapi.IN_QUERY, description='Минимальная цена', type=openapi.TYPE_NUMBER),
         openapi.Parameter('max_price', openapi.IN_QUERY, description='Максимальная цена', type=openapi.TYPE_NUMBER),
@@ -141,12 +142,13 @@ class ProductViewSet(viewsets.ModelViewSet):
     ])
     @action(methods=['get'], detail=True)
     def get_by_brand(self, request, pk=None):
-        products = Product.objects.filter(brand=pk)
-        serializer = ProductSerializer(products, many=True)
+        queryset = Product.objects.filter(brand=pk)
+        queryset = self.filter_queryset(queryset)
+        serializer = ProductSerializer(queryset, many=True)
 
         return Response({'products': serializer.data})
-    
-    
+
+
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('min_price', openapi.IN_QUERY, description='Минимальная цена', type=openapi.TYPE_NUMBER),
         openapi.Parameter('max_price', openapi.IN_QUERY, description='Максимальная цена', type=openapi.TYPE_NUMBER),
@@ -156,18 +158,16 @@ class ProductViewSet(viewsets.ModelViewSet):
     ])
     @action(methods=['get'], detail=False)
     def recommended(self, request):
-        recommended_products = Product.objects.order_by('-rating', '-created_at')[:50]
-        serializer = self.get_serializer(recommended_products, many=True)
-
+        queryset = self.get_queryset().order_by('-rating', '-created_at')[:50]
+        serializer = self.get_serializer(queryset, many=True)
         return Response({'products': serializer.data})
-    
 
     @action(methods=['get'], detail=False)
     def new_products(self, request):
-        new_products = Product.objects.filter(arrived=True)
-        serializer = self.get_serializer(new_products, many=True)
+        queryset = self.get_queryset().filter(arrived=True)
+        serializer = self.get_serializer(queryset, many=True)
         return Response({'products': serializer.data})
-    
+        
 
     @action(methods=['POST'], detail=True)
     def favorite(self, request, pk=None):
